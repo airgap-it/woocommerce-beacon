@@ -67,8 +67,6 @@ if (CONTRACT) {
     };
 }
 
-console.log(OPERATION)
-
 /**
  * Displays a message on the store checkout website
  * @param  {String}  heading    Title of the message
@@ -87,7 +85,7 @@ const showMessage = function(heading, text, type, hide = false) {
 
     if (previousType != type) {
         previousType = type;
-        document.getElementById('beacon-img').src = PATH + '/wp-content/plugins/beacon-gateway/assets/svg/' + type + '.svg';
+        document.getElementById('beacon-img').src = PATH + '/assets/svg/' + type + '.svg';
         switch (type) {
             case 'error':
                 element.style.backgroundColor = "#A94442";

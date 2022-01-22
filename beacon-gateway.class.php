@@ -4,7 +4,7 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id = 'beacon';
-        $this->icon = get_site_url().'/wp-content/plugins/beacon-gateway/assets/svg/beacon.svg';
+        $this->icon = WP_PLUGIN_URL.'/beacon-gateway/assets/svg/beacon.svg';
         $this->has_fields = true;
         $this->method_title = 'Beacon';
         $this->method_description = 'Leverage the beacon network to pay via Crypto';
@@ -175,10 +175,10 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
         }
 
         // load the wallet beacon lib
-        wp_enqueue_script('beacon_js', '/wp-content/plugins/beacon-gateway/assets/js/walletbeacon.min.js');
+        wp_enqueue_script('beacon_js', WP_PLUGIN_URL.'/beacon-gateway/assets/js/walletbeacon.min.js');
 
         // load the frontend script
-        wp_enqueue_script('woocommerce_beacon', '/wp-content/plugins/beacon-gateway/assets/js/beacon-gateway.js');
+        wp_enqueue_script('woocommerce_beacon', WP_PLUGIN_URL.'/beacon-gateway/assets/js/beacon-gateway.js');
         $params = array(
             'api_base' => 'https://api.tzkt.io/v1/',
             'amount' => $this->get_order_total() ,
@@ -189,24 +189,10 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
             'confirmations' => $this->confirmations,
             'store_name' => $this->get_option('store_name') ,
             'currency_symbol' => $symbol,
-            'path' => get_site_url()
+            'path' => WP_PLUGIN_URL.'/beacon-gateway/'
         );
         wp_localize_script('woocommerce_beacon', 'php_params', $params);
     }
-
-    /*
-     * Fields validation, more in Step 5
-    */
-    // public function validate_fields()
-    // {
-
-    //     // if( empty( $_POST[ 'beacon_transactionHash' ]) ) {
-    //     //     wc_add_notice(  'No beacon hash defined', 'error' );
-    //     //     return false;
-    //     // }
-    //     return true;
-
-    // }
 
     /**
      * Server side validation step before order is posted
@@ -216,21 +202,24 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
     {
         // Load temporary order
         $order = wc_get_order($order_id);
+        
+        // Sanitize input
+        $transaction = sanitize_text_field($_POST['beacon_transactionHash']);
 
-        if (empty($_POST['beacon_transactionHash']))
+        if (empty($transaction))
         {
             wc_add_notice('Validation error - not transaction hash posted -  please contact the administrator', 'error');
             return false;
         }
 
-        if (!is_valid_transaction($_POST['beacon_transactionHash'], $this->confirmations))
+        if (!beacon_is_valid_transaction($this->$receiver, $transaction, get_order_total(), $this->confirmations, get_woocommerce_currency_symbol() == "tz"))
         {
             wc_add_notice('Validation error - not enough confirmations, incorrect amount or wrong receiver -  please contact the administrator', 'error');
             return false;
         }
 
         // Append transaction hash to order & confirm order
-        $order->update_meta_data('beacon_transactionHash', $_POST['beacon_transactionHash']);
+        $order->update_meta_data('beacon_transactionHash', $transaction);
         $order->save();
         $order->payment_complete();
         $order->reduce_order_stock();

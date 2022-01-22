@@ -4,7 +4,7 @@
  * @param  url      Url to request
  * @return object   JSON response
  */
-function get_json($url)
+function beacon_get_json($url)
 {
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
@@ -20,10 +20,10 @@ function get_json($url)
  * @param  confirmations      number   amount of min required confirmations    
  * @return                    object    
  */
-function get_blockchain_data($receiver, $transaction_hash, $amount, $confirmations)
+function beacon_get_blockchain_data($receiver, $transaction_hash, $amount, $confirmations)
 {
-    $head = get_json("https://api.tzkt.io/v1/head")["level"];
-    $operation = get_json("https://api.tzkt.io/v1/operations/".$transaction_hash);
+    $head = beacon_get_json("https://api.tzkt.io/v1/head")["level"];
+    $operation = beacon_get_json("https://api.tzkt.io/v1/operations/".$transaction_hash);
     $response["confirmations"] = $head - $operation[0]["level"];
     if($GLOBALS["IS_NATIVE_TZ"]){
         $response["amount"] = $operation[0]["amount"] / 1000000;
@@ -42,8 +42,8 @@ function get_blockchain_data($receiver, $transaction_hash, $amount, $confirmatio
  * @param  confirmations      number   amount of min required confirmations    
  * @return                    boolean  
  */
-function is_valid_transaction($transaction_hash, $confirmations){
-    $response = get_blockchain_data($transaction_hash);
+function beacon_is_valid_transaction($transaction_hash, $confirmations){
+    $response = beacon_get_blockchain_data($transaction_hash);
     return $response['correct_address'] && $response['correct_amount'] && $response['confirmations'] >= $confirmations;
 }
 
@@ -52,7 +52,7 @@ function is_valid_transaction($transaction_hash, $confirmations){
  * @param  currencies   array   List additional currency         
  * @return              array   Modified currency list
  */
-function register_currencies($currencies)
+function beacon_register_currencies($currencies)
 {
     $tokens = json_decode(file_get_contents(plugin_dir_path(__FILE__) . "/assets/json/tokens.json", false) , true);
     foreach ($tokens as $token)
@@ -68,7 +68,7 @@ function register_currencies($currencies)
  * @param  currencies      array     List additional currency         
  * @return                 array   Modified currency symbols list
  */
-function register_symbols($currency_symbol, $currency)
+function beacon_register_symbols($currency_symbol, $currency)
 {
     $tokens = json_decode(file_get_contents(plugin_dir_path(__FILE__) . "/assets/json/tokens.json", false) , true);
     foreach ($tokens as $token)
@@ -86,7 +86,7 @@ function register_symbols($currency_symbol, $currency)
  * @param  gateways     array   List of currenctly registered gateways
  * @return              array   Extended gateways list
  */
-function register_gateway($gateways)
+function beacon_register_gateway($gateways)
 {
     $gateways[] = 'WC_Beacon_Gateway';
     return $gateways;
@@ -95,7 +95,7 @@ function register_gateway($gateways)
 /**
  * Initialize gateway class
  */
-function init_gateway()
+function beacon_init_gateway()
 {
     require __DIR__ . '/beacon-gateway.class.php';
 }
