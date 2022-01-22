@@ -1,5 +1,5 @@
 === Beacon Payment Gateway ===
-Contributors: (this should be a list of wordpress.org userid's)
+Contributors: lukeisontheroad
 Tags: woocommerce, payment, gateway, tezos, beacon, airgap
 Requires at least: 5.0
 Tested up to: 5.8
