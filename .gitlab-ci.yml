@@ -1,0 +1,30 @@
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+  IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+  NAMESPACE: woocommerce-beacon
+  GOOGLE_TAG: eu.gcr.io/papers-kubernetes/woocommerce-beacon:$CI_COMMIT_SHA
+  GOOGLE_TAG_LATEST: eu.gcr.io/papers-kubernetes/woocommerce-beacon:latest
+
+image: tmaier/docker-compose:latest
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+    - docker build -t $GOOGLE_TAG .
+  tags:
+    - docker
+
+test:
+  stage: test
+  script:
+    - docker rm woocommerce_beacon_$CI_COMMIT_SHA || true
+    - docker run --user root --name woocommerce_beacon_$CI_COMMIT_SHA $GOOGLE_TAG bash -c "php ./vendor/bin/phpunit"
+  tags:
+    - docker
