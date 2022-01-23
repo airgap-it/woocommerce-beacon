@@ -20,6 +20,24 @@ Directly from this GitHub or via https://wordpress.org/plugins/ .
 
 woocommerce.com
 
+=== Installation & configuration ===
+
+Install the plugin directly through the wordpress plugin directory. Afterwards follow these steps:
+
+1. In the admin, enable the payment gateway by going to WooCommerce -> Payments -> Beacon
+2. Click on manage
+3. Enable the payment gateway, set a title, description, recipient address (your Tezos Wallet address), min Confirmations (you can leave it as default), set a store name and define the payment button description
+4. Navigate to WooCommerce -> Settings -> General
+5. Pick the currency you want to accept (i.e. uUSD)
+
+=== Tests ===
+
+Just run
+```
+composer install
+php vendor/bin/phpunit 
+```
+
 === Features ===
 - Support for native Tez
 - Support for FA2 compatible tokens

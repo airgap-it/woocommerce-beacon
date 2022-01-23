@@ -1,4 +1,5 @@
-<?
+<?php
+
 /**
  * Helper method to do a GET request
  * @param  url      Url to request
@@ -16,35 +17,37 @@ function beacon_get_json($url)
 
 /**
  * Verifies if enough confirmaitons have been collected
- * @param  receiver           string   tz1 address hash
- * @param  confirmations      number   amount of min required confirmations    
+ * @param  transaction_hash   string   transaction hash
+ * @param  is_native          boolean  extract native or fa2 token  
  * @return                    object    
  */
-function beacon_get_blockchain_data($receiver, $transaction_hash, $amount, $confirmations)
+function beacon_get_blockchain_data($transaction_hash, $is_native)
 {
     $head = beacon_get_json("https://api.tzkt.io/v1/head")["level"];
     $operation = beacon_get_json("https://api.tzkt.io/v1/operations/".$transaction_hash);
     $response["confirmations"] = $head - $operation[0]["level"];
-    if($GLOBALS["IS_NATIVE_TZ"]){
+    if($is_native){
         $response["amount"] = $operation[0]["amount"] / 1000000;
-        $response["correct_address"] = $operation[0]["target"]["address"] === $GLOBALS["RECEIVER"];
+        $response["receiver"] = $operation[0]["target"]["address"];
     }else{
         $response["amount"] = $operation[0]["parameter"]["value"][0]["txs"][0]["amount"] / 10**12;
-        $response["correct_address"] = $operation[0]["parameter"]["value"][0]["txs"][0]["to_"] === $GLOBALS["RECEIVER"] && $operation[0]["parameter"]["value"][0]["txs"][0]["token_id"] === $GLOBALS["TOKEN_ID"];
+        $response["receiver"] = $operation[0]["parameter"]["value"][0]["txs"][0]["to_"];
     }
-    $response["correct_amount"] = $response["amount"] === $amount;
-    return json_encode($response);
+    return $response;
 }
 
 /**
  * Verifies if enough confirmaitons have been collected
- * @param  transaction_hash   string   tz1 address hash
- * @param  confirmations      number   amount of min required confirmations    
+ * @param  receiver           string   receiver address
+ * @param  transaction_hash   string   transaction hash
+ * @param  amount             number   set amount to receive
+ * @param  confirmation       number   min amount of confirmations to verify
+ * @param  is_native          boolean  extract native or fa2 token   
  * @return                    boolean  
  */
-function beacon_is_valid_transaction($transaction_hash, $confirmations){
-    $response = beacon_get_blockchain_data($transaction_hash);
-    return $response['correct_address'] && $response['correct_amount'] && $response['confirmations'] >= $confirmations;
+function beacon_is_valid_transaction($receiver, $transaction_hash, $amount, $confirmations, $is_native){
+    $response = beacon_get_blockchain_data($transaction_hash, $is_native);
+    return $response["receiver"] === $receiver && $response["amount"] === $amount && $response['confirmations'] >= $confirmations;
 }
 
 /**
@@ -57,7 +60,7 @@ function beacon_register_currencies($currencies)
     $tokens = json_decode(file_get_contents(plugin_dir_path(__FILE__) . "/assets/json/tokens.json", false) , true);
     foreach ($tokens as $token)
     {
-        $currencies[$token['identifier']] = __($token['name'], 'woocommerce');
+        $currencies[$token['identifier']] = $token['name'];
     }
     return $currencies;
 }
