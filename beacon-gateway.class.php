@@ -4,7 +4,7 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id = 'beacon';
-        $this->icon = WP_PLUGIN_URL.'/beacon-gateway/assets/svg/beacon.svg';
+        $this->icon = esc_url(WP_PLUGIN_URL.'/beacon-gateway/assets/svg/beacon.svg');
         $this->has_fields = true;
         $this->method_title = 'Beacon';
         $this->method_description = 'Leverage the beacon network to pay via Crypto';
@@ -17,11 +17,11 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
         $this->init_settings();
 
         // Read settings
-        $this->title = $this->get_option('title');
-        $this->description = $this->get_option('description');
-        $this->enabled = $this->get_option('enabled');
-        $this->recipient = $this->get_option('recipient');
-        $this->confirmations = $this->get_option('confirmations');
+        $this->title = esc_attr($this->get_option('title'));
+        $this->description = esc_attr($this->get_option('description'));
+        $this->enabled = esc_attr($this->get_option('enabled'));
+        $this->recipient = esc_attr($this->get_option('recipient'));
+        $this->confirmations = esc_attr($this->get_option('confirmations'));
 
         // Save settings
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this,'process_admin_options'));
@@ -180,15 +180,15 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
         // load the frontend script
         wp_enqueue_script('woocommerce_beacon', WP_PLUGIN_URL.'/beacon-gateway/assets/js/beacon-gateway.js');
         $params = array(
-            'api_base' => 'https://api.tzkt.io/v1/',
-            'amount' => $this->get_order_total() ,
-            'contract' => $contract,
-            'decimals' => $decimals,
-            'token_id' => $token_id,
-            'recipient' => $this->recipient,
-            'confirmations' => $this->confirmations,
-            'store_name' => $this->get_option('store_name') ,
-            'currency_symbol' => $symbol,
+            'api_base' => esc_url('https://api.tzkt.io/v1/'),
+            'amount' => esc_attr($this->get_order_total()),
+            'contract' => esc_attr($contract),
+            'decimals' => esc_attr($decimals),
+            'token_id' => esc_attr($token_id),
+            'recipient' => esc_attr($this->recipient),
+            'confirmations' => esc_attr($this->confirmations),
+            'store_name' => esc_attr($this->get_option('store_name')),
+            'currency_symbol' => esc_attr($symbol),
             'path' => WP_PLUGIN_URL.'/beacon-gateway/'
         );
         wp_localize_script('woocommerce_beacon', 'php_params', $params);
@@ -204,7 +204,7 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         
         // Sanitize input
-        $transaction = sanitize_text_field($_POST['beacon_transactionHash']);
+        $transaction = esc_attr(sanitize_text_field($_POST['beacon_transactionHash']));
 
         if (empty($transaction))
         {

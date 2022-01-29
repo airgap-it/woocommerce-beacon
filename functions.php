@@ -7,12 +7,8 @@
  */
 function beacon_get_json($url)
 {
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-    $result = curl_exec($curl);
-    curl_close($curl);
-    return json_decode($result, true);
+    $response = wp_remote_get($url);
+    return json_decode(wp_remote_retrieve_body( $response ), true);
 }
 
 /**

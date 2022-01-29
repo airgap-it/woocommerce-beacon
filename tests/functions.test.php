@@ -1,7 +1,23 @@
 <?php
 
+// FIXME: Mock WP function
 function plugin_dir_path(){
     return getcwd();
+}
+
+// FIXME: Mock WP function
+function wp_remote_get($url){
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+    $result = curl_exec($curl);
+    curl_close($curl);
+    return $result;
+}
+
+// FIXME: Mock WP function
+function wp_remote_retrieve_body($result){
+    return $result;
 }
 
 use PHPUnit\Framework\TestCase;

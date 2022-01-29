@@ -22,7 +22,7 @@
     <div id="beacon-status">
         <img
             id="beacon-img"
-            src="<?php WP_PLUGIN_URL."/beacon-gateway/assets/svg/progress.svg"; ?>"
+            src="<?php echo esc_url(WP_PLUGIN_URL."/beacon-gateway/assets/svg/progress.svg"); ?>"
             style="height: 64px; width: 64px;"
         />
         <div style="float: right; width: calc(100% - 80px);">
@@ -31,5 +31,5 @@
         </div>
     </div>
     <input id="beacon_transactionHash" name="beacon_transactionHash" type="text" autocomplete="off" />
-    <button id="beacon-connect" class="button alt" onclick="startBeacon(event);"><?php echo $this->get_option( "payment_button_text" ); ?></button>
+    <button id="beacon-connect" class="button alt" onclick="startBeacon(event);"><?php echo esc_html($this->get_option("payment_button_text")); ?></button>
 </fieldset>
