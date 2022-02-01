@@ -4,7 +4,7 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id = 'beacon';
-        $this->icon = esc_url(WP_PLUGIN_URL.'/beacon-gateway/assets/svg/beacon.svg');
+        $this->icon = esc_url(plugins_url( '/assets/svg/beacon.svg', __FILE__ ));
         $this->has_fields = true;
         $this->method_title = 'Beacon';
         $this->method_description = 'Leverage the beacon network to pay via Crypto';
@@ -175,10 +175,10 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
         }
 
         // load the wallet beacon lib
-        wp_enqueue_script('beacon_js', WP_PLUGIN_URL.'/beacon-gateway/assets/js/walletbeacon.min.js');
+        wp_enqueue_script('beacon_js', plugins_url('/assets/js/walletbeacon.min.js', __FILE__ ));
 
         // load the frontend script
-        wp_enqueue_script('woocommerce_beacon', WP_PLUGIN_URL.'/beacon-gateway/assets/js/beacon-gateway.js');
+        wp_enqueue_script('woocommerce_beacon', plugins_url('/assets/js/beacon-gateway.js', __FILE__ ));
         $params = array(
             'api_base' => esc_url('https://api.tzkt.io/v1/'),
             'amount' => esc_attr($this->get_order_total()),
@@ -189,7 +189,7 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
             'confirmations' => esc_attr($this->confirmations),
             'store_name' => esc_attr($this->get_option('store_name')),
             'currency_symbol' => esc_attr($symbol),
-            'path' => WP_PLUGIN_URL.'/beacon-gateway/'
+            'path' => plugins_url('/', __FILE__ )
         );
         wp_localize_script('woocommerce_beacon', 'php_params', $params);
     }
