@@ -204,7 +204,7 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         
         // Sanitize input
-        $transaction = esc_attr(sanitize_text_field($_POST['beacon_transactionHash']));
+        $transaction = sanitize_text_field($_POST['beacon_transactionHash']);
 
         if (empty($transaction))
         {
