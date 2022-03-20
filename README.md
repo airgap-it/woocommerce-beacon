@@ -2,8 +2,8 @@
 Contributors: lukeisontheroad
 Tags: woocommerce, payment, gateway, tezos, beacon, airgap
 Requires at least: 5.0
-Tested up to: 5.8
-Stable tag: 1.0.0
+Tested up to: 6.0
+Stable tag: 1.1.0
 Requires PHP: 7.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
@@ -27,8 +27,8 @@ Install the plugin directly through the wordpress plugin directory. Afterwards f
 1. In the admin, enable the payment gateway by going to WooCommerce -> Payments -> Beacon
 2. Click on manage
 3. Enable the payment gateway, set a title, description, recipient address (your Tezos Wallet address), min Confirmations (you can leave it as default), set a store name and define the payment button description
-4. Navigate to WooCommerce -> Settings -> General
-5. Pick the currency you want to accept (i.e. uUSD)
+4. Navigate to Plugins -> Beacon configuration
+5. Enable the currencies you want to accept and the conversion rate to your main store currency
 
 === Tests ===
 
