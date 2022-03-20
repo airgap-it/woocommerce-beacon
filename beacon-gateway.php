@@ -5,7 +5,9 @@
  * Description: Pay via Beacon Network
  * Author: Lukas Schönbächler
  * Author URI: https://www.papers.ch
- * Version: 1.0.0
+ * Version: 1.1.0
+ * Requires at least: 5.0
+ * Requires PHP:      7.0
 */
 require_once (__DIR__ . '/functions.php');
 
