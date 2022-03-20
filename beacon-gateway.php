@@ -7,9 +7,8 @@
  * Author URI: https://www.papers.ch
  * Version: 1.0.0
 */
-require __DIR__ . '/functions.php';
+require_once (__DIR__ . '/functions.php');
 
-add_filter('woocommerce_currencies', 'beacon_register_currencies');
-add_filter('woocommerce_currency_symbol', 'beacon_register_symbols', 10, 2);
 add_filter('woocommerce_payment_gateways', 'beacon_register_gateway');
 add_action('plugins_loaded', 'beacon_init_gateway');
+add_action('admin_menu', 'beacon_menu');

@@ -3,15 +3,11 @@
  */
 const API_BASE = php_params['api_base'];
 const RECIPIENT = php_params['recipient'];
-const DECIMALS = php_params['decimals'];
-const CONTRACT = php_params['contract'];
-const AMOUNT = (php_params['amount'] * 10 ** DECIMALS).toString();
-const TOKEN_ID = php_params['token_id'].toString();
+const AMOUNT = php_params['amount'];
 const STORE_NAME = php_params['store_name'];
-const CURRENCY_SYMBOL = php_params['currency_symbol'];
 const PATH = php_params['path'];
-const REQUIRED_CONFIRMATIONS = 5;
-const POLLING_INTERVAL = 1 * 1000;
+const REQUIRED_CONFIRMATIONS = parseInt(php_params['confirmations']);
+const POLLING_INTERVAL = 5 * 1000;
 
 /**
  * Setup state
@@ -21,51 +17,6 @@ var paymentInitiated = false;
 const client = new beacon.DAppClient({
     name: STORE_NAME,
 });
-
-/**
- * Prepare operation
- */
-var OPERATION = {
-    kind: 'transaction',
-    destination: RECIPIENT,
-    amount: AMOUNT,
-};
-
-// if a contract is set, invoke contract instead of transfer
-if (CONTRACT) {
-    OPERATION = {
-        kind: beacon.TezosOperationType.TRANSACTION,
-        amount: "0",
-        destination: CONTRACT,
-        parameters: {
-            entrypoint: "transfer",
-            value: [{
-                prim: "Pair",
-                args: [{
-                        string: '', // account.address,
-                    },
-                    [{
-                        prim: "Pair",
-                        args: [{
-                                string: RECIPIENT,
-                            },
-                            {
-                                prim: "Pair",
-                                args: [{
-                                        int: TOKEN_ID,
-                                    },
-                                    {
-                                        int: AMOUNT,
-                                    },
-                                ],
-                            },
-                        ],
-                    }, ],
-                ],
-            }, ],
-        },
-    };
-}
 
 /**
  * Displays a message on the store checkout website
@@ -134,24 +85,80 @@ const getHTTP = function(url, callback) {
  * Validates if the checkout form is valid
  * @return {Boolean}    true if all fields contain a valid value
  */
-const validateForm = function() {
-    var isValid = true;
-    [
-        'billing_first_name',
-        'billing_last_name',
-        'billing_country',
-        'billing_address_1',
-        'billing_postcode',
-        'billing_city',
-    ].forEach(id => {
-        if (document.getElementById(id).value + '' == '') {
-            isValid &= false;
-        }
-    })
-    var isEmail = /\S+@\S+\.\S+/;
-    isValid &= isEmail.test(document.getElementById('billing_email').value);
-    return isValid;
-}
+// const validateForm = function() {
+//     var isValid = true;
+//     [
+//         'billing_first_name',
+//         'billing_last_name',
+//         'billing_country',
+//         'billing_address_1',
+//         'billing_postcode',
+//         'billing_city',
+//     ].forEach(id => {
+//         if (document.getElementById(id).value + '' == '') {
+//             isValid &= false;
+//         }
+//     })
+//     var isEmail = /\S+@\S+\.\S+/;
+//     isValid &= isEmail.test(document.getElementById('billing_email').value);
+//     return isValid;
+// }
+
+/**
+ * Prepare operation
+ */
+const prepareOperation = () => {
+    const currency = document.getElementById('beacon-select').value.split('-');
+    const rate = currency[1];
+    const decimals = currency[2];
+    const contract = currency[3];
+    const token_id = currency[4];
+    const calculated_amount = (rate * AMOUNT * 10 ** decimals).toString();
+
+    if (contract === ' ') {
+        return {
+            kind: 'transaction',
+            destination: RECIPIENT,
+            amount: calculated_amount,
+        };
+    }
+    console.log('contract', contract);
+    console.log('calculated_amount', calculated_amount);
+    console.log('token_id', token_id);
+    console.log('decimals', decimals);
+    return {
+        kind: beacon.TezosOperationType.TRANSACTION,
+        amount: "0",
+        destination: contract,
+        parameters: {
+            entrypoint: "transfer",
+            value: [{
+                prim: "Pair",
+                args: [{
+                        string: contract,
+                    },
+                    [{
+                        prim: "Pair",
+                        args: [{
+                                string: RECIPIENT,
+                            },
+                            {
+                                prim: "Pair",
+                                args: [{
+                                        int: token_id,
+                                    },
+                                    {
+                                        int: calculated_amount,
+                                    },
+                                ],
+                            },
+                        ],
+                    }, ],
+                ],
+            }, ],
+        },
+    };
+};
 
 /**
  * Invoke beacon signing request
@@ -160,7 +167,7 @@ const validateForm = function() {
 const signOperation = () => {
     client
         .requestOperation({
-            operationDetails: [OPERATION],
+            operationDetails: [prepareOperation()],
         })
         .then((response) => {
             showMessage('Payment process', 'Transaction hash not (yet) found', 'progress', false);
@@ -209,36 +216,38 @@ const startBeacon = function(event) {
  * Watch the form for changes
  */
 setInterval(function() {
-    if (validateForm()) {
-        const transactionHash = document.getElementById("beacon_transactionHash").value;
-        if (transactionHash) {
-            // Request current blockchain information
-            getHTTP(API_BASE + 'operations/' + transactionHash, function(responseOperations) {
-                if (responseOperations) {
-                    getHTTP(API_BASE + 'head', function(responseHead) {
-                        var confirmations = responseHead["level"] - responseOperations[0]["level"];
-                        // Check if transaction is confirmed
-                        if (confirmations >= REQUIRED_CONFIRMATIONS) {
-                            // Enough confirmations found, post to server for serverside validation
-                            showMessage('Payment in process', 'Enough confirmations...', 'success', false);
-                            document.getElementById('beacon-connect').click();
-                        } else {
-                            // Await more confirmations...
-                            showMessage('Payment in process', confirmations + ' out of ' + REQUIRED_CONFIRMATIONS + ' confirmations', 'progress', false);
-                            document.getElementById('beacon-connect').style.display = 'none';
-                        }
-                    });
-                } else {
-                    // Hash found, but not yet known/broadcastet by the network
-                    showMessage('Payment process', 'Transaction hash not (yet) found', 'progress', false);
-                }
-            });
-        } else if (!paymentInitiated) {
-            // Form valid, ready for payment
-            showMessage('Payment process', 'Ready for payment (click button below)', 'info', false);
-        }
-    } else {
-        // Form invalid, wait for more information
-        showMessage('Payment process', 'Missing contact information', 'info', false);
+    // if (validateForm()) {
+    const transactionHash = document.getElementById("beacon_transactionHash").value;
+    if (transactionHash) {
+        // Request current blockchain information
+        getHTTP(API_BASE + 'operations/' + transactionHash, function(responseOperations) {
+            if (responseOperations) {
+                getHTTP(API_BASE + 'head', function(responseHead) {
+                    var confirmations = responseHead["level"] - responseOperations[0]["level"];
+                    // Check if transaction is confirmed
+                    if (confirmations >= REQUIRED_CONFIRMATIONS) {
+                        // Enough confirmations found, post to server for serverside validation
+                        showMessage('Payment in process', 'Enough confirmations...', 'success', false);
+                        // document.getElementById('beacon-connect').click();
+                        document.getElementById("place_order").click()
+
+                    } else {
+                        // Await more confirmations...
+                        showMessage('Payment in process', confirmations + ' out of ' + REQUIRED_CONFIRMATIONS + ' confirmations', 'progress', false);
+                        document.getElementById('beacon-connect').style.display = 'none';
+                    }
+                });
+            } else {
+                // Hash found, but not yet known/broadcastet by the network
+                showMessage('Payment process', 'Transaction hash not (yet) found', 'progress', false);
+            }
+        });
+    } else if (!paymentInitiated) {
+        // Form valid, ready for payment
+        showMessage('Payment process', 'Ready for payment (click button below)', 'info', false);
     }
+    // } else {
+    //     // Form invalid, wait for more information
+    //     showMessage('Payment process', 'Missing contact information', 'info', false);
+    // }
 }, POLLING_INTERVAL);
