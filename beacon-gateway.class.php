@@ -152,18 +152,17 @@ class WC_Beacon_Gateway extends WC_Payment_Gateway
             return;
         }
 
-        // load the wallet beacon lib
-        wp_enqueue_script('beacon_js', esc_attr(WP_PLUGIN_URL.'/beacon-gateway/assets/js/walletbeacon.min.js'));
-
         // load the frontend script
-        wp_enqueue_script('woocommerce_beacon', esc_attr(WP_PLUGIN_URL.'/beacon-gateway/assets/js/beacon-gateway.js'));
+        wp_enqueue_script('beacon_js', plugins_url('/assets/js/walletbeacon.min.js', __FILE__ ));
+        wp_enqueue_script('woocommerce_beacon', plugins_url('/assets/js/beacon-gateway.js', __FILE__ ));
         $params = array(
             'api_base' => esc_url('https://api.tzkt.io/v1/'),
             'amount' => esc_attr($this->get_order_total()),
             'recipient' => esc_attr($this->recipient),
             'confirmations' => esc_attr($this->confirmations),
             'store_name' => esc_attr($this->get_option('store_name')),
-            'path' => esc_attr(WP_PLUGIN_URL.'/beacon-gateway/')
+            'currency_symbol' => esc_attr($symbol),
+            'path' => plugins_url('/', __FILE__ )
         );
         wp_localize_script('woocommerce_beacon', 'php_params', $params);
     }

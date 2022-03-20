@@ -82,29 +82,6 @@ const getHTTP = function(url, callback) {
 };
 
 /**
- * Validates if the checkout form is valid
- * @return {Boolean}    true if all fields contain a valid value
- */
-// const validateForm = function() {
-//     var isValid = true;
-//     [
-//         'billing_first_name',
-//         'billing_last_name',
-//         'billing_country',
-//         'billing_address_1',
-//         'billing_postcode',
-//         'billing_city',
-//     ].forEach(id => {
-//         if (document.getElementById(id).value + '' == '') {
-//             isValid &= false;
-//         }
-//     })
-//     var isEmail = /\S+@\S+\.\S+/;
-//     isValid &= isEmail.test(document.getElementById('billing_email').value);
-//     return isValid;
-// }
-
-/**
  * Prepare operation
  */
 const prepareOperation = () => {
@@ -175,8 +152,6 @@ const signOperation = () => {
             document.getElementById('beacon-connect').style.display = 'none';
             // Fill hidden transaction field
             document.getElementById("beacon_transactionHash").value = response.transactionHash;
-            // Continue form
-            document.getElementById("place_order").click()
         })
         .catch(() => {
             showMessage('Payment cancelled', 'Please reload the page', 'warning', false);
@@ -246,8 +221,4 @@ setInterval(function() {
         // Form valid, ready for payment
         showMessage('Payment process', 'Ready for payment (click button below)', 'info', false);
     }
-    // } else {
-    //     // Form invalid, wait for more information
-    //     showMessage('Payment process', 'Missing contact information', 'info', false);
-    // }
 }, POLLING_INTERVAL);

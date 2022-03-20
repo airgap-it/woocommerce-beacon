@@ -23,7 +23,7 @@
     <div id="beacon-status">
         <img
             id="beacon-img"
-            src="<?php echo esc_url(WP_PLUGIN_URL."/beacon-gateway/assets/svg/progress.svg"); ?>"
+            src="<?php echo esc_url(plugins_url('/assets/svg/progress.svg', __FILE__ )); ?>"
             style="height: 64px; width: 64px;"
         />
         <div style="float: right; width: calc(100% - 80px);">
